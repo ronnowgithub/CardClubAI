@@ -34,11 +34,37 @@
         button:hover {
             background-color: #45a049;
         }
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .register-link {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .register-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="login-form">
         <h1>Welcome to User Stats</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <form method="POST" action="{{ url_for('do_login') }}">
             <div>
                 <label for="username">Username:</label>
@@ -46,6 +72,9 @@
             </div>
             <button type="submit">Login</button>
         </form>
+        <div class="register-link">
+            <p>New user? <a href="{{ url_for('register') }}">Register here</a></p>
+        </div>
     </div>
 </body>
 </html> 
