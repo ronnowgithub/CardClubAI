@@ -280,6 +280,47 @@
             padding: 4px 8px;
             margin: 0;
         }
+        
+        /* Create Event Modal specific styles */
+        #createEventModal .modal-content {
+            padding: 30px;
+        }
+        
+        #createEventModal .form-group {
+            margin-bottom: 20px;
+        }
+        
+        #createEventModal label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        #createEventModal select,
+        #createEventModal input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        #createEventModal .button-group {
+            margin-top: 25px;
+            text-align: right;
+        }
+        
+        #createEventModal .button-group button {
+            margin-left: 10px;
+        }
+        
+        #createEventModal .cancel-btn {
+            background-color: #9e9e9e;
+        }
+        
+        #createEventModal .cancel-btn:hover {
+            background-color: #757575;
+        }
     </style>
 </head>
 <body>
@@ -323,10 +364,7 @@
 
         <div id="events" class="tab-content">
             <div class="create-event-form">
-                <form action="{{ url_for('create_event') }}" method="POST">
-                    <input type="date" name="date" required>
-                    <button type="submit">Create Event</button>
-                </form>
+                <button onclick="openCreateEventModal()">Create New Event</button>
             </div>
 
             <table>
@@ -399,6 +437,34 @@
                 <div class="modal-buttons">
                     <button type="submit" class="submit-btn">OK</button>
                     <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateEventModal()">&times;</span>
+            <h2>Create New Event</h2>
+            <form action="{{ url_for('create_event') }}" method="POST">
+                <div class="form-group">
+                    <label for="date">Event Date:</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="host">Host:</label>
+                    <select id="host" name="host" required>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if user.name == session['username'] %}selected{% endif %}>
+                                {{ user.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="cancel-btn" onclick="closeCreateEventModal()">Cancel</button>
+                    <button type="submit">Create Event</button>
                 </div>
             </form>
         </div>
@@ -489,6 +555,26 @@
                 input.disabled = !checkbox.checked;
             });
         });
+
+        // Create Event Modal Functions
+        function openCreateEventModal() {
+            document.getElementById('createEventModal').style.display = 'block';
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+
+        function closeCreateEventModal() {
+            document.getElementById('createEventModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('createEventModal');
+            if (event.target == modal) {
+                closeCreateEventModal();
+            }
+        }
     </script>
 </body>
 </html> 

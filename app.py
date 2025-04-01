@@ -4,6 +4,7 @@ import sqlite3
 from functools import wraps
 from enum import Enum
 from datetime import datetime
+import pathlib
 
 class EventStatus(Enum):
     CANCELLED = "Cancelled"
@@ -11,11 +12,19 @@ class EventStatus(Enum):
     FINISHED = "Finished"
 
 app = Flask(__name__)
-PORT = int(os.getenv("PORT", 5000))  # Use Railway's assigned port
-app.secret_key = 'DummyWillChangeLater'  # Required for session management
+PORT = int(os.getenv("PORT", 5000))
+# Use environment variable for secret key with a fallback
+app.secret_key = os.getenv('SECRET_KEY', 'dev-key-please-change-in-production')
+
+# Set up database path
+DB_PATH = os.getenv('DATABASE_URL', 'sqlite:///data/users.db')
+if DB_PATH.startswith('sqlite:///'):
+    DB_PATH = DB_PATH[10:]  # Remove sqlite:/// prefix
+    # Ensure the data directory exists
+    pathlib.Path(os.path.dirname(DB_PATH)).mkdir(parents=True, exist_ok=True)
 
 def get_db():
-    conn = sqlite3.connect('/tmp/users.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -169,27 +178,30 @@ def logout():
 @login_required
 def create_event():
     date = request.form['date']  # Will be in YYYY-MM-DD format from the date input
+    host_id = request.form['host']  # Get the selected host ID from the form
     
-    # Get host_id from the current user's name
     conn = get_db()
     c = conn.cursor()
-    c.execute('SELECT id FROM users WHERE name = ?', (session['username'],))
-    host = c.fetchone()
     
-    if host:
-        try:
+    try:
+        # Verify if the host exists and the current user is allowed to create events
+        c.execute('SELECT name FROM users WHERE id = ?', (host_id,))
+        host = c.fetchone()
+        
+        if host:
             c.execute('''
                 INSERT INTO events (date, host_id, status)
                 VALUES (?, ?, ?)
-            ''', (date, host['id'], EventStatus.UPCOMING.value))
+            ''', (date, host_id, EventStatus.UPCOMING.value))
             conn.commit()
             flash('Event created successfully!')
-        except sqlite3.Error as e:
-            flash('Error creating event: ' + str(e))
-    else:
-        flash('Error: Host not found')
+        else:
+            flash('Error: Host not found')
+    except sqlite3.Error as e:
+        flash('Error creating event: ' + str(e))
+    finally:
+        conn.close()
     
-    conn.close()
     return redirect(url_for('dashboard'))
 
 @app.route('/event/<int:event_id>/status', methods=['POST'])
@@ -300,6 +312,6 @@ def add_event_result(event_id):
     
     return redirect(url_for('dashboard'))
 
-if __name__ == '__main__':
+if __name__ == '__main__':  
     init_db()
     app.run(host="0.0.0.0", port=PORT)
