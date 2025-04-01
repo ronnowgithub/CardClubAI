@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 from functools import wraps
@@ -10,6 +11,7 @@ class EventStatus(Enum):
     FINISHED = "Finished"
 
 app = Flask(__name__)
+PORT = int(os.getenv("PORT", 5000))  # Use Railway's assigned port
 app.secret_key = 'DummyWillChangeLater'  # Required for session management
 
 def get_db():
@@ -300,4 +302,4 @@ def add_event_result(event_id):
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True) 
+    app.run(debug=True, host="0.0.0.0", port=PORT)
