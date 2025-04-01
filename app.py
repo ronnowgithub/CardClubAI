@@ -301,5 +301,5 @@ def add_event_result(event_id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    #init_db()
+    init_db()
     app.run(host="0.0.0.0", port=PORT)
