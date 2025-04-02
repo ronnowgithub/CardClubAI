@@ -18,16 +18,16 @@ PORT = int(os.getenv("PORT", 5000))
 app.secret_key = os.getenv('SECRET_KEY', 'dev-key-please-change-in-production')
 
 # Database configuration
-# DATABASE_URL = os.getenv('DATABASE_URL')
-DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/postgres'
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/postgres'
 if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     # Handle Heroku/Railway style DATABASE_URLs
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 def get_db():
     if not DATABASE_URL:
-        # raise Exception("DATABASE_URL environment variable is not set")
-        DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/postgres'
+        raise Exception("DATABASE_URL environment variable is not set")
 
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
