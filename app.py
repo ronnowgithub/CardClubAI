@@ -29,9 +29,13 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
 def get_db():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL environment variable is not set")
-
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    return conn
+    
+    try:
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        return conn
+    except psycopg2.OperationalError as e:
+        print(f"Error connecting to database: {e}")
+        raise
 
 def init_db():
     conn = get_db()
