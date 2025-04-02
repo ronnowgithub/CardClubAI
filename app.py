@@ -20,6 +20,7 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-key-please-change-in-production')
 # Database configuration
 DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:
+    print("No DATABASE_URL found. Using default value.")
     DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/postgres'
 if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     # Handle Heroku/Railway style DATABASE_URLs
